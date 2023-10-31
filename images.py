@@ -15,7 +15,7 @@ def tinhLBP(image):
 
     lbp = feature.local_binary_pattern(anhXam, soDiem, banKinh, method='uniform')
 
-    hist, _ = np.histogram(lbp.ravel(), bins=np.arange(0, soDiem + 3), range=(0, soDiem + 2))
+    hist, _ = np.histogram(lbp.ravel())
     hist = hist.astype("float")
     hist /= (hist.sum() + 1e-7)
     return hist
