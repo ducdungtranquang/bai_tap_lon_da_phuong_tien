@@ -5,7 +5,7 @@ from skimage import feature
 from sklearn.metrics import pairwise_distances
 
 def tinhLBP(image):
-    anh_xam = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    anh_xam = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
     ban_kinh = 1
     so_diem = 8 * ban_kinh
 
@@ -14,7 +14,6 @@ def tinhLBP(image):
     hist, _ = np.histogram(lbp.ravel(), bins=np.arange(0, so_diem + 3), range=(0, so_diem + 2))
     hist = hist.astype("float")
     hist /= (hist.sum() + 1e-7)
-    
     return hist
 
 def danhSachHinhAnh(folder):
@@ -23,7 +22,7 @@ def danhSachHinhAnh(folder):
         for file in files:
             if file.lower().endswith(('.jpg', '.jpeg', '.png', '.gif', '.bmp')):  # Kiểm tra các định dạng hình ảnh phổ biến
                 img_path = os.path.join(root, file)
-                docAnh = cv2.imread('testSearch.png')
+                docAnh = cv2.imread(img_path)
                 danh_sach_hinh_anh.append(docAnh)
     return danh_sach_hinh_anh
 
