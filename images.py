@@ -37,27 +37,38 @@ def taoCoSoDuLieu(danhSachHInhAnh):
         taoCoSoDuLieu.append(hist)
     return taoCoSoDuLieu
 
-def timKienTuongTu(anhTim, coSoDuLieu):
-    khoangCach = pairwise_distances(np.array(coSoDuLieu), anhTim.reshape(1, -1), metric='euclidean')
-    return khoangCach
+def timKiemTuongTu(anhTim, coSoDuLieu):
+    similarities = []
+    for hist in coSoDuLieu:
+        similarity = cosine_compare(hist, anhTim)
+        similarities.append(similarity)
+    return similarities
+
+def cosine_compare(vector1, vector2):
+    dot_product = sum(vector1[i] * vector2[i] for i in range(len(vector1)))
+    norm1 = sum(val * 2 for val in vector1) * 0.5
+    norm2 = sum(val * 2 for val in vector2) * 0.5
+    similarity = dot_product / (norm1 * norm2)
+    return similarity
 
 def main():
-    coSoDuLieu = taoCoSoDuLieu(danhSachHinhAnh(duongDanDanhSachHinhAnh))
+    danhSach = danhSachHinhAnh(duongDanDanhSachHinhAnh)
+    coSoDuLieu = taoCoSoDuLieu(danhSach)
     anhCanTim = cv2.imread(duongDanAnhCanTim)
     hist = tinhLBP(anhCanTim)
 
     # Tìm hình ảnh tương tự
-    mangDoTuongTu = timKienTuongTu(hist, coSoDuLieu)
-    doTuongTuSapXep = np.short(mangDoTuongTu, reverse=True).flatten().astype(int)
+    mangDoTuongTu = timKiemTuongTu(hist, coSoDuLieu)
+    doTuongTuSapXep = np.argsort(mangDoTuongTu)[::-1]
 
     # Lấy ra N hình ảnh tương tự hàng đầu
-    soLuongAnhLayRa = 3  # Thay đổi giá trị này để lấy ra số lượng hình ảnh tương tự khác nhau
-    # Lấy ra chỉ số của top N hình ảnh tương tự
-    nhungDoTuongTuLonNhat = doTuongTuSapXep[:soLuongAnhLayRa].flatten()
+    soLuongHinhAnhLayRa = 3
+    nhungHinhTuongTuNhat = doTuongTuSapXep[:soLuongHinhAnhLayRa]
 
     # Hiển thị hình ảnh tương tự từ danh sách đã sắp xếp
-    for i, index in enumerate(nhungDoTuongTuLonNhat):
-        img = danhSachHinhAnh[index+1]
+    for i, index in enumerate(nhungHinhTuongTuNhat):
+        print(index)
+        img = danhSach[index]
         cv2.imshow(f'Hinh anh tuong tu {i+1}', img)
         cv2.waitKey(0)
     cv2.destroyAllWindows()
