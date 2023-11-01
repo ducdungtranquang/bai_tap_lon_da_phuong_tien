@@ -7,10 +7,21 @@ from skimage import feature
 from PIL import Image, ImageTk
 
 
-from images import danhSachHinhAnh, taoCoSoDuLieu, timKiemTuongTu, tinhLBP, main
+from images import danhSachHinhAnh, taoCoSoDuLieu, timKiemTuongTu, tinhLBP
 
 duongDanDanhSachHinhAnh = "./output_images"
+soLuongAnhHienThi = 3
 
+def show_image(label, img):
+    # Convert the OpenCV image to a format that can be displayed by Tkinter
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    img = Image.fromarray(img)
+    img = ImageTk.PhotoImage(img)
+
+    # Display the image on the Label
+    label.configure(image=img)
+    label.image = img
+        
 class Application(tk.Frame):
     def __init__(self, master=None):
         super().__init__(master)
@@ -48,8 +59,11 @@ class Application(tk.Frame):
         self.so_sanh_btn["command"] = self.compare_images
         self.so_sanh_btn.pack()
 
-        self.image_label = tk.Label(self)
-        self.image_label.pack()
+        self.image_labels = []
+        for _ in range(soLuongAnhHienThi):
+            label = tk.Label(self)
+            label.pack(side="left", padx=10)
+            self.image_labels.append(label)
 
         self.quit = tk.Button(self, text="Thoat", command=root.destroy)
         self.quit.pack()
@@ -110,8 +124,8 @@ class Application(tk.Frame):
         doTuongTuSapXep = np.argsort(mangDoTuongTu)[::-1]
 
         # Lấy ra N hình ảnh tương tự hàng đầu
-        soLuongHinhAnhLayRa = 3
-        nhungHinhTuongTuNhat = doTuongTuSapXep[:soLuongHinhAnhLayRa]
+
+        nhungHinhTuongTuNhat = doTuongTuSapXep[:soLuongAnhHienThi]
 
         # Hiển thị hình ảnh tương tự từ danh sách đã sắp xếp
         for i, index in enumerate(nhungHinhTuongTuNhat):
@@ -122,12 +136,15 @@ class Application(tk.Frame):
             img = Image.fromarray(img)
             img = ImageTk.PhotoImage(img)
 
-            # Hiển thị hình ảnh trên Label
-            self.image_label.configure(image=img)
-            self.image_label.image = img  # Lưu tham chiếu để tránh việc bị hủy bởi garbage collector
+
+            for i, image_path in enumerate(self.selected_images[:soLuongAnhHienThi]):
+                img = cv2.imread(image_path)
+                label = self.image_labels[i]
+                show_image(label, img)
 
             # Đợi một khoảng thời gian trước khi hiển thị hình ảnh tiếp theo
             self.update_idletasks()
+            self.after(500)
 
 root = tk.Tk()
 app = Application(master=root)
