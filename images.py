@@ -6,25 +6,9 @@ from skimage import feature
 duong_dan_folder = "./output_images"
 duong_dan_and_can_tim = "test1.png"
 
-# giam choi
-def phat_hien_choi_va_xu_ly(img, nguong):
-    # Tính toán ngưỡng dựa trên giá trị trung bình của các điểm không chói
-    mean_brightness = np.mean(img)
 
-    # Phát hiện vùng chói bằng cách so sánh độ sáng với ngưỡng
-    _, mask = cv2.threshold(img, nguong, 255, cv2.THRESH_BINARY)
-
-    # Tính giá trị trung bình của vùng chói
-    mean_brightness = np.mean(img[mask > 0])
-
-    # Xử lý chói - giảm sáng vùng chói
-    img = np.where(mask > 0, img - int(mean_brightness), img)
-
-    return img
-# ==================================================================
 def tinh_LBP(image):
-    chuyen_anh_xam = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
-    anh_xam = phat_hien_choi_va_xu_ly(chuyen_anh_xam, 200)
+    anh_xam = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
     banKinh = 1
     soDiem = 8 * banKinh
 
