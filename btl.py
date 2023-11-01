@@ -127,23 +127,12 @@ class Application(tk.Frame):
         nhungHinhTuongTuNhat = doTuongTuSapXep[:soLuongAnhHienThi]
 
         # Hiển thị hình ảnh tương tự từ danh sách đã sắp xếp
+        # Hiển thị hình ảnh tương tự từ danh sách đã sắp xếp
         for i, index in enumerate(nhungHinhTuongTuNhat):
             img = danhSach[index]
-
-            # Chuyển đổi hình ảnh từ OpenCV sang định dạng có thể hiển thị bởi Tkinter
-            img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-            img = Image.fromarray(img)
-            img = ImageTk.PhotoImage(img)
-
-
-            for i, image_path in enumerate(self.selected_images[:soLuongAnhHienThi]):
-                img = cv2.imread(image_path)
-                label = self.image_labels[i]
-                show_image(label, img)
-
-            # Đợi một khoảng thời gian trước khi hiển thị hình ảnh tiếp theo
-            self.update_idletasks()
-            self.after(500)
+            cv2.imshow(f'Hinh anh tuong tu {i+1}', img)
+            cv2.waitKey(500)
+        cv2.destroyAllWindows()
 
 root = tk.Tk()
 app = Application(master=root)
