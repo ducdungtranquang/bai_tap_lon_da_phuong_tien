@@ -4,9 +4,10 @@ import cv2
 import os
 import numpy as np
 from skimage import feature
-from sklearn.metrics import pairwise_distances
+from PIL import Image, ImageTk
 
-from images import danhSachHinhAnh, taoCoSoDuLieu, timKiemTuongTu, tinhLBP
+
+from images import danhSachHinhAnh, taoCoSoDuLieu, timKiemTuongTu, tinhLBP, main
 
 duongDanDanhSachHinhAnh = "./output_images"
 
@@ -46,6 +47,9 @@ class Application(tk.Frame):
         self.so_sanh_btn["state"] = "disabled"
         self.so_sanh_btn["command"] = self.compare_images
         self.so_sanh_btn.pack()
+
+        self.image_label = tk.Label(self)
+        self.image_label.pack()
 
         self.quit = tk.Button(self, text="Thoat", command=root.destroy)
         self.quit.pack()
@@ -95,7 +99,6 @@ class Application(tk.Frame):
             return
 
         image1_path = self.selected_images[0]
-        image1 = cv2.imread(image1_path)
         # Tính toán LBP và so sánh hình ảnh ở đây
         danhSach = danhSachHinhAnh(duongDanDanhSachHinhAnh)
         coSoDuLieu = taoCoSoDuLieu(danhSach)
@@ -112,13 +115,19 @@ class Application(tk.Frame):
 
         # Hiển thị hình ảnh tương tự từ danh sách đã sắp xếp
         for i, index in enumerate(nhungHinhTuongTuNhat):
-            print(index)
             img = danhSach[index]
-            cv2.imshow(f'Hinh anh tuong tu {i+1}', img)
-            cv2.waitKey(0)
-        cv2.destroyAllWindows()
 
-    
+            # Chuyển đổi hình ảnh từ OpenCV sang định dạng có thể hiển thị bởi Tkinter
+            img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+            img = Image.fromarray(img)
+            img = ImageTk.PhotoImage(img)
+
+            # Hiển thị hình ảnh trên Label
+            self.image_label.configure(image=img)
+            self.image_label.image = img  # Lưu tham chiếu để tránh việc bị hủy bởi garbage collector
+
+            # Đợi một khoảng thời gian trước khi hiển thị hình ảnh tiếp theo
+            self.update_idletasks()
 
 root = tk.Tk()
 app = Application(master=root)
