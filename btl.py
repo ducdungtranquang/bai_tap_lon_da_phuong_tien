@@ -53,7 +53,7 @@ class Application(tk.Frame):
         self.chon_anh1.pack()
 
         self.so_sanh_btn = tk.Button(self)
-        self.so_sanh_btn["text"] = "So sanh anh"
+        self.so_sanh_btn["text"] = "Tìm kiếm ảnh tương tự nhất"
         self.so_sanh_btn["state"] = "disabled"
         self.so_sanh_btn["command"] = self.compare_images
         self.so_sanh_btn.pack()
