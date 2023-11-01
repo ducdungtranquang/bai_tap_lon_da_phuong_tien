@@ -2,16 +2,17 @@ import cv2
 import os
 import numpy as np
 from skimage import feature
-from sklearn.metrics import pairwise_distances
 
-
-duongDanDanhSachHinhAnh = "./output_images"
-duongDanAnhCanTim = "test1.png"
+duong_dan_folder = "./output_images"
+duong_dan_and_can_tim = "test1.png"
 
 # giam choi
 def phat_hien_choi_va_xu_ly(img, nguong):
+    # Tính toán ngưỡng dựa trên giá trị trung bình của các điểm không chói
+    mean_brightness = np.mean(img)
+
     # Phát hiện vùng chói bằng cách so sánh độ sáng với ngưỡng
-    ret, mask = cv2.threshold(img, nguong, 255, cv2.THRESH_BINARY)
+    _, mask = cv2.threshold(img, nguong, 255, cv2.THRESH_BINARY)
 
     # Tính giá trị trung bình của vùng chói
     mean_brightness = np.mean(img[mask > 0])
@@ -21,44 +22,48 @@ def phat_hien_choi_va_xu_ly(img, nguong):
 
     return img
 # ==================================================================
-def tinhLBP(image):
-    anhXams = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
-    anhXam = phat_hien_choi_va_xu_ly(anhXams, 200)
+def tinh_LBP(image):
+    chuyen_anh_xam = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
+    anh_xam = phat_hien_choi_va_xu_ly(chuyen_anh_xam, 200)
     banKinh = 1
     soDiem = 8 * banKinh
 
-    lbp = feature.local_binary_pattern(anhXam, soDiem, banKinh, method='uniform')
-
+    lbp = feature.local_binary_pattern(anh_xam, soDiem, banKinh)
     hist, _ = np.histogram(lbp.ravel())
     hist = hist.astype("float")
     hist /= (hist.sum() + 1e-7)
     return hist
 
-def danhSachHinhAnh(folder):
-    danhSachHinhAnh = []
-    for duongDanGoc, dirs, files in os.walk(folder):
+# doc anh trong folder
+def danh_sach_hinh_anh_trong_folder(folder):
+    danh_sach_hinh_anh_trong_folder = []
+    for duong_dan_goc, dirs, files in os.walk(folder):
         for file in files:
             if file.lower().endswith(('.jpg', '.jpeg', '.png', '.gif', '.bmp')):  # Kiểm tra các định dạng hình ảnh phổ biến
-                duongDanAnh = os.path.join(duongDanGoc, file)
-                docAnh = cv2.imread(duongDanAnh)
-                danhSachHinhAnh.append(docAnh)
-    return danhSachHinhAnh
+                duong_dan_anh = os.path.join(duong_dan_goc, file)
+                doc_anh = cv2.imread(duong_dan_anh)
+                danh_sach_hinh_anh_trong_folder.append(doc_anh)
+    return danh_sach_hinh_anh_trong_folder
 
-def taoCoSoDuLieu(danhSachHInhAnh):
-    taoCoSoDuLieu = []
-    for img in danhSachHInhAnh:
-        hist = tinhLBP(img)
-        taoCoSoDuLieu.append(hist)
-    return taoCoSoDuLieu
+# co so du lieu gom mang cac gia tri diem anh
+def tao_co_so_du_lieu(danh_sach_hinh_anh_trong_folder):
+    co_so_du_lieu = []
+    for img in danh_sach_hinh_anh_trong_folder:
+        hist = tinh_LBP(img)
+        print(hist)
+        print("=")
+        co_so_du_lieu.append(hist)
+    return co_so_du_lieu
 
-def timKiemTuongTu(anhTim, coSoDuLieu):
-    mangKetQuaTheoCosine = []
+# tinh do tuong tu dua tren cosine
+def tinh_do_tuong_tu_trong_folder(anhTim, coSoDuLieu):
+    mang_ket_qua_theo_cosine = []
     for hist in coSoDuLieu:
-        ketquaTheoCosine = tinhCosine(hist, anhTim)
-        mangKetQuaTheoCosine.append(ketquaTheoCosine)
-    return mangKetQuaTheoCosine
+        ketquaTheoCosine = tinh_cosine(hist, anhTim)
+        mang_ket_qua_theo_cosine.append(ketquaTheoCosine)
+    return mang_ket_qua_theo_cosine
 
-def tinhCosine(vector1, vector2):
+def tinh_cosine(vector1, vector2):
     dot_product = sum(vector1[i] * vector2[i] for i in range(len(vector1)))
     norm1 = sum(val * 2 for val in vector1) * 0.5
     norm2 = sum(val * 2 for val in vector2) * 0.5
@@ -66,19 +71,18 @@ def tinhCosine(vector1, vector2):
     return similarity
 
 def main():
-    danhSach = danhSachHinhAnh(duongDanDanhSachHinhAnh)
-    coSoDuLieu = taoCoSoDuLieu(danhSach)
-    anhCanTim = cv2.imread(duongDanAnhCanTim)
-    hist = tinhLBP(anhCanTim)
+    danhSach = danh_sach_hinh_anh_trong_folder(duong_dan_folder)
+    coSoDuLieu = tao_co_so_du_lieu(danhSach)
+    anhCanTim = cv2.imread(duong_dan_and_can_tim)
+    hist = tinh_LBP(anhCanTim)
 
     # Tìm hình ảnh tương tự
-    mangDoTuongTu = timKiemTuongTu(hist, coSoDuLieu)
+    mangDoTuongTu = tinh_do_tuong_tu_trong_folder(hist, coSoDuLieu)
     doTuongTuSapXep = np.argsort(mangDoTuongTu)[::-1]
 
     # Lấy ra N hình ảnh tương tự hàng đầu
     soLuongHinhAnhLayRa = 3
     nhungHinhTuongTuNhat = doTuongTuSapXep[:soLuongHinhAnhLayRa]
-    print(nhungHinhTuongTuNhat)
     # Hiển thị hình ảnh tương tự từ danh sách đã sắp xếp
     for i, index in enumerate(nhungHinhTuongTuNhat):
         print(index)
