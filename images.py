@@ -21,7 +21,7 @@ def tinh_LBP(image):
 # doc anh trong folder
 def danh_sach_hinh_anh_trong_folder(folder):
     danh_sach_hinh_anh_trong_folder = []
-    for duong_dan_goc, dirs, files in os.walk(folder):
+    for duong_dan_goc, _, files in os.walk(folder):
         for file in files:
             if file.lower().endswith(('.jpg', '.jpeg', '.png', '.gif', '.bmp')):  # Kiểm tra các định dạng hình ảnh phổ biến
                 duong_dan_anh = os.path.join(duong_dan_goc, file)
@@ -34,8 +34,6 @@ def tao_co_so_du_lieu(danh_sach_hinh_anh_trong_folder):
     co_so_du_lieu = []
     for img in danh_sach_hinh_anh_trong_folder:
         hist = tinh_LBP(img)
-        print(hist)
-        print("=")
         co_so_du_lieu.append(hist)
     return co_so_du_lieu
 
@@ -69,7 +67,6 @@ def main():
     nhungHinhTuongTuNhat = doTuongTuSapXep[:soLuongHinhAnhLayRa]
     # Hiển thị hình ảnh tương tự từ danh sách đã sắp xếp
     for i, index in enumerate(nhungHinhTuongTuNhat):
-        print(index)
         img = danhSach[index]
         cv2.imshow(f'Hinh anh tuong tu {i+1}', img)
         cv2.waitKey(0)
