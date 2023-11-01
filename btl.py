@@ -7,9 +7,9 @@ from skimage import feature
 from PIL import Image, ImageTk
 
 
-from images import danhSachHinhAnh, taoCoSoDuLieu, timKiemTuongTu, tinhLBP
+from images import danh_sach_hinh_anh_trong_folder, tao_co_so_du_lieu, tinh_do_tuong_tu_trong_folder, tinh_LBP
 
-duongDanDanhSachHinhAnh = "./output_images"
+duongDandanh_sach_hinh_anh_trong_folder = "./output_images"
 soLuongAnhHienThi = 3
 
 def show_image(label, img):
@@ -114,13 +114,13 @@ class Application(tk.Frame):
 
         image1_path = self.selected_images[0]
         # Tính toán LBP và so sánh hình ảnh ở đây
-        danhSach = danhSachHinhAnh(duongDanDanhSachHinhAnh)
-        coSoDuLieu = taoCoSoDuLieu(danhSach)
+        danhSach = danh_sach_hinh_anh_trong_folder(duongDandanh_sach_hinh_anh_trong_folder)
+        coSoDuLieu = tao_co_so_du_lieu(danhSach)
         anhCanTim = cv2.imread(image1_path)
-        hist = tinhLBP(anhCanTim)
+        hist = tinh_LBP(anhCanTim)
 
         # Tìm hình ảnh tương tự
-        mangDoTuongTu = timKiemTuongTu(hist, coSoDuLieu)
+        mangDoTuongTu = tinh_do_tuong_tu_trong_folder(hist, coSoDuLieu)
         doTuongTuSapXep = np.argsort(mangDoTuongTu)[::-1]
 
         # Lấy ra N hình ảnh tương tự hàng đầu
