@@ -61,7 +61,7 @@ class Application(tk.Frame):
         self.image_labels = []
         for _ in range(soLuongAnhHienThi):
             label = tk.Label(self)
-            label.pack(side="left", padx=10)
+            label.pack(side="left")
             self.image_labels.append(label)
 
         self.quit = tk.Button(self, text="Thoat", command=root.destroy)
