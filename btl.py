@@ -3,7 +3,6 @@ from tkinter import filedialog, messagebox
 import cv2
 import os
 import numpy as np
-from skimage import feature
 from PIL import Image, ImageTk
 
 
