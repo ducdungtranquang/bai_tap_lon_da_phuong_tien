@@ -132,6 +132,10 @@ class Application(tk.Frame):
             img = danhSach[index]
             cv2.imshow(f'Hinh anh tuong tu {i+1}', img)
             cv2.waitKey(500)
+        while cv2.getWindowProperty(f'Nhung hinh anh tuong tu {len(nhungHinhTuongTuNhat)}', 0) >= 0:
+            key = cv2.waitKey(1)
+            if key != -1:
+                break
         cv2.destroyAllWindows()
 
 root = tk.Tk()
