@@ -1,8 +1,26 @@
 import tkinter as tk
-from tkinter import filedialog, messagebox, simpledialog
+from tkinter import filedialog, messagebox
 import cv2
 import os
+import numpy as np
+from PIL import Image, ImageTk
 
+
+from images import danh_sach_hinh_anh_trong_folder, tao_co_so_du_lieu, tinh_do_tuong_tu_trong_folder, tinh_LBP
+
+duongDandanh_sach_hinh_anh_trong_folder = "./output_images"
+soLuongAnhHienThi = 3
+
+def show_image(label, img):
+    # Convert the OpenCV image to a format that can be displayed by Tkinter
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    img = Image.fromarray(img)
+    img = ImageTk.PhotoImage(img)
+
+    # Display the image on the Label
+    label.configure(image=img)
+    label.image = img
+        
 class Application(tk.Frame):
     def __init__(self, master=None):
         super().__init__(master)
@@ -14,39 +32,39 @@ class Application(tk.Frame):
         self.selected_images = []
 
     def create_widgets(self):
-        self.label = tk.Label(text="Video to Image Converter")
+        self.label = tk.Label(text="Khai pha Bi kip vo lam")
         self.label.pack()
 
-        self.select_video_button = tk.Button(self)
-        self.select_video_button["text"] = "Select Video File"
-        self.select_video_button["command"] = self.select_video
-        self.select_video_button.pack()
+        self.chon_video_btn = tk.Button(self)
+        self.chon_video_btn["text"] = "Chon file Video"
+        self.chon_video_btn["command"] = self.select_video
+        self.chon_video_btn.pack()
 
-        self.convert_button = tk.Button(self)
-        self.convert_button["text"] = "Convert Video to Images"
-        self.convert_button["state"] = "disabled"
-        self.convert_button["command"] = self.convert_video_to_images
-        self.convert_button.pack()
+        self.chuyen_doi = tk.Button(self)
+        self.chuyen_doi["text"] = "Chuyen doi video thanh anh"
+        self.chuyen_doi["state"] = "disabled"
+        self.chuyen_doi["command"] = self.chuyen_video_to_anh
+        self.chuyen_doi.pack()
 
-        self.select_image1_button = tk.Button(self)
-        self.select_image1_button["text"] = "Select Image 1"
-        self.select_image1_button["state"] = "disabled"
-        self.select_image1_button["command"] = self.select_image1
-        self.select_image1_button.pack()
+        self.chon_anh1 = tk.Button(self)
+        self.chon_anh1["text"] = "Chon anh 1"
+        self.chon_anh1["state"] = "normal"
+        self.chon_anh1["command"] = self.select_image1
+        self.chon_anh1.pack()
 
-        self.select_image2_button = tk.Button(self)
-        self.select_image2_button["text"] = "Select Image 2"
-        self.select_image2_button["state"] = "disabled"
-        self.select_image2_button["command"] = self.select_image2
-        self.select_image2_button.pack()
+        self.so_sanh_btn = tk.Button(self)
+        self.so_sanh_btn["text"] = "Tìm kiếm ảnh tương tự nhất"
+        self.so_sanh_btn["state"] = "disabled"
+        self.so_sanh_btn["command"] = self.compare_images
+        self.so_sanh_btn.pack()
 
-        self.compare_button = tk.Button(self)
-        self.compare_button["text"] = "Compare Images"
-        self.compare_button["state"] = "disabled"
-        self.compare_button["command"] = self.compare_images
-        self.compare_button.pack()
+        self.image_labels = []
+        for _ in range(soLuongAnhHienThi):
+            label = tk.Label(self)
+            label.pack(side="left")
+            self.image_labels.append(label)
 
-        self.quit = tk.Button(self, text="QUIT", command=root.destroy)
+        self.quit = tk.Button(self, text="Thoat", command=root.destroy)
         self.quit.pack()
 
     def select_video(self):
@@ -56,11 +74,11 @@ class Application(tk.Frame):
             self.output_folder = "output_images"  # Thay đổi thành thư mục đầu ra bạn muốn
             if not os.path.exists(self.output_folder):
                 os.makedirs(self.output_folder)
-            self.convert_button["state"] = "normal"  # Kích hoạt nút chuyển đổi
+            self.chuyen_doi["state"] = "normal"  # Kích hoạt nút chuyển đổi
 
-    def convert_video_to_images(self):
+    def chuyen_video_to_anh(self):
         if not hasattr(self, 'video_path'):
-            messagebox.showinfo("Error", "Please select a video file first.")
+            messagebox.showinfo("Error", "Loi chon video.")
             return
 
         cap = cv2.VideoCapture(self.video_path)
@@ -78,46 +96,47 @@ class Application(tk.Frame):
         cap.release()
         message = f"Video converted to {frame_count} images in {self.output_folder}"
         messagebox.showinfo("Success", message)
-        self.select_image1_button["state"] = "normal"
-        self.select_image2_button["state"] = "normal"
+        self.chon_anh1["state"] = "normal"
 
     def select_image1(self):
         image_path = filedialog.askopenfilename(filetypes=[("Image files", "*.png *.jpg *.jpeg")])
         if image_path:
             self.selected_images.append(image_path)
-            if len(self.selected_images) == 2:
-                self.compare_button["state"] = "normal"
-            self.select_image1_button["state"] = "disabled"
-
-    def select_image2(self):
-        image_path = filedialog.askopenfilename(filetypes=[("Image files", "*.png *.jpg *.jpeg")])
-        if image_path:
-            self.selected_images.append(image_path)
-            if len(self.selected_images) == 2:
-                self.compare_button["state"] = "normal"
-            self.select_image2_button["state"] = "disabled"
+            if len(self.selected_images) == 1:
+                self.so_sanh_btn["state"] = "normal"
+            self.chon_anh1["state"] = "disabled"
 
     def compare_images(self):
-        if len(self.selected_images) != 2:
-            messagebox.showinfo("Error", "Please select two images for comparison.")
+        if len(self.selected_images) != 1:
+            messagebox.showinfo("Error", "Vui long chon anh.")
             return
 
-        image1_path, image2_path = self.selected_images
-        image1 = cv2.imread(image1_path)
-        image2 = cv2.imread(image2_path)
-        
-        if self.compare_images_similarity(image1, image2):
-            messagebox.showinfo("Image Comparison", "Images are similar.")
-        else:
-            messagebox.showinfo("Image Comparison", "Images are different.")
+        image1_path = self.selected_images[0]
+        # Tính toán LBP và so sánh hình ảnh ở đây
+        danhSach = danh_sach_hinh_anh_trong_folder(duongDandanh_sach_hinh_anh_trong_folder)
+        coSoDuLieu = tao_co_so_du_lieu(danhSach)
+        anhCanTim = cv2.imread(image1_path)
+        hist = tinh_LBP(anhCanTim)
 
-    def compare_images_similarity(self, image1, image2):
-        # Add your image comparison logic here (e.g., using OpenCV's image processing functions)
-        # Return True if images are similar, False if they are different.
-        # For a simple example, you can compare the average pixel value difference.
-        diff = cv2.absdiff(image1, image2)
-        avg_diff = diff.mean()
-        return avg_diff < 30  # You can adjust this threshold as needed
+        # Tìm hình ảnh tương tự
+        mangDoTuongTu = tinh_do_tuong_tu_trong_folder(hist, coSoDuLieu)
+        doTuongTuSapXep = np.argsort(mangDoTuongTu)[::-1]
+
+        # Lấy ra N hình ảnh tương tự hàng đầu
+
+        nhungHinhTuongTuNhat = doTuongTuSapXep[:soLuongAnhHienThi]
+
+        # Hiển thị hình ảnh tương tự từ danh sách đã sắp xếp
+        # Hiển thị hình ảnh tương tự từ danh sách đã sắp xếp
+        for i, index in enumerate(nhungHinhTuongTuNhat):
+            img = danhSach[index]
+            cv2.imshow(f'Hinh anh tuong tu {i+1}', img)
+            cv2.waitKey(500)
+        while cv2.getWindowProperty(f'Nhung hinh anh tuong tu {len(nhungHinhTuongTuNhat)}', 0) >= 0:
+            key = cv2.waitKey(1)
+            if key != -1:
+                break
+        cv2.destroyAllWindows()
 
 root = tk.Tk()
 app = Application(master=root)
